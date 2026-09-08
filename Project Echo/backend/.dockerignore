@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+.tts_outputs/
+*.mp3
+*.wav
+.git/
+.gitignore
+README.md
