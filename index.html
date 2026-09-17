@@ -516,65 +516,263 @@
         .about-card p:last-child { margin-bottom: 0; }
         .about-card strong { color: var(--white); font-weight: 500; }
 
-        /* 技能清单 */
+        /* 技能清单 · 树状分裂视图 */
         .tracklist {
+            position: relative;
             background: linear-gradient(160deg, var(--bg-card), rgba(17,17,19,0.6));
             border: 1px solid var(--line);
             border-radius: 16px;
             overflow: hidden;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
         }
-        .track {
-            display: grid;
-            grid-template-columns: 44px 1fr auto 60px;
+
+        /* 左上角：固定切换技能树下拉 */
+        .tree-switch { position: absolute; top: 1rem; left: 1.3rem; z-index: 40; padding: 0; }
+        .switch-btn {
+            display: inline-flex;
             align-items: center;
-            gap: 1rem;
-            padding: 0.95rem 1.3rem;
-            border-bottom: 1px solid var(--line-soft);
-            transition: background 0.2s ease;
-            cursor: default;
+            gap: 0.55rem;
+            padding: 0.5rem 1.05rem;
+            border-radius: 100px;
+            background: rgba(16,16,18,0.85);
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-size: 0.84rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.25s ease;
+        }
+        .switch-btn:hover { border-color: rgba(212,212,216,0.25); color: var(--white); }
+        .switch-btn .switch-lab {
+            font-size: 0.62rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+        .switch-btn .switch-caret { font-size: 0.62rem; color: var(--text-3); transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1); }
+        .tree-switch.open .switch-btn .switch-caret { transform: rotate(180deg); color: var(--platinum); }
+        .switch-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 210px;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            list-style: none;
+            background: linear-gradient(160deg, #141416, #0b0b0c);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+            transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+        }
+        .tree-switch.open .switch-menu { max-height: 440px; opacity: 1; overflow-y: auto; }
+        .switch-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.58rem 0.95rem;
+            font-size: 0.84rem;
+            color: var(--text-2);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .switch-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+        .switch-item .si-no { color: var(--text-3); font-variant-numeric: tabular-nums; font-size: 0.72rem; }
+        .switch-item.active { color: var(--white); background: linear-gradient(90deg, rgba(212,212,216,0.08), transparent); }
+        .switch-item.active .si-no { color: var(--platinum); }
+        .switch-item .si-dot {
+            margin-left: auto;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.25s ease;
+        }
+        .switch-item.active .si-dot { background: var(--platinum); box-shadow: 0 0 8px var(--glow); }
+
+        /* 舞台：知识树画面（主 · 拓 横向排布） */
+        .tree-views { position: relative; height: 480px; }
+        .tree-view { position: relative; display: none; }
+        .tree-view.active {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: clamp(120px, 20vw, 260px);
+            padding-left: 12%;
+            height: 100%;
+            animation: skIn 0.45s cubic-bezier(0.2,0.8,0.2,1);
+        }
+        @keyframes skIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 根节点：悬浮大按钮（主） */
+        .root-wrap { flex: none; z-index: 3; padding: 0; }
+        .root-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: 0;
+            padding: 0.85rem 1.7rem;
+            border-radius: 100px;
+            background: linear-gradient(160deg, var(--bg-elev), var(--metal-2));
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 14px 44px rgba(0,0,0,0.5);
+            transition: all 0.35s cubic-bezier(0.2,0.8,0.2,1);
+        }
+        .root-btn:hover {
+            border-color: rgba(212,212,216,0.3);
+            box-shadow: 0 0 32px rgba(212,212,216,0.14), 0 14px 44px rgba(0,0,0,0.5);
+            transform: translateY(-2px);
+        }
+        .root-btn::after { display: none; }
+        .root-btn .root-caret { font-size: 0.62rem; color: var(--text-3); transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1); }
+        .root-btn .root-meta { font-size: 0.7rem; color: var(--text-3); letter-spacing: 1.5px; font-variant-numeric: tabular-nums; }
+        .tree-view.open .root-btn {
+            border-color: rgba(212,212,216,0.35);
+            box-shadow: 0 0 36px rgba(212,212,216,0.16), 0 14px 44px rgba(0,0,0,0.5);
+        }
+        .tree-view.open .root-btn .root-caret { transform: rotate(90deg); color: var(--platinum); }
+
+        /* 连接线条 */
+        .tree-lines {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            overflow: visible;
+            opacity: 1;
+            transition: opacity 0.35s ease;
+        }
+        .tree-view:not(.open) .tree-lines { opacity: 0; }
+        .tree-lines path {
+            fill: none;
+            stroke: rgba(212,212,216,0.42);
+            stroke-width: 1.5;
+            filter: drop-shadow(0 0 4px rgba(212,212,216,0.25));
+            transition: stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        /* 分支列：主体右侧纵向分散（拓） */
+        .branch-col {
+            flex: none;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease 0.1s;
+        }
+        .tree-view.open .branch-col { opacity: 1; pointer-events: auto; }
+
+        /* 分支按钮（与根按钮同款设计） */
+        .node-btn {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            align-items: stretch;
+            min-width: 200px;
+            padding: 0.6rem 1rem 0.68rem;
+            border-radius: 14px;
+            background: linear-gradient(160deg, var(--bg-elev), var(--metal-2));
+            border: 1px solid var(--line);
+            font-family: inherit;
+            cursor: pointer;
+            text-align: left;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+            transition: all 0.25s ease;
+        }
+        .node-btn:hover {
+            border-color: rgba(212,212,216,0.25);
+            box-shadow: 0 0 24px rgba(212,212,216,0.1), 0 10px 28px rgba(0,0,0,0.35);
+            transform: translateY(-2px);
+        }
+        .node-btn::before { display: none; }
+        .node-name { font-size: 0.88rem; color: var(--text); font-weight: 500; letter-spacing: 0.5px; transition: color 0.25s ease; }
+        .node-pct {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.85rem;
+            font-size: 0.72rem;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-3);
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            transition: color 0.25s ease;
+        }
+        .node-btn.done .node-pct { color: var(--platinum); }
+
+        /* 按钮内进度条：横向灌水 */
+        .node-bar {
+            display: block;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--line);
+            overflow: hidden;
             position: relative;
         }
-        .track:last-child { border-bottom: none; }
-        .track::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 2px;
-            background: var(--platinum);
-            opacity: 0;
-            transition: opacity 0.25s ease;
-        }
-        .track:hover { background: rgba(255,255,255,0.02); }
-        .track:hover::before { opacity: 1; }
-        .track:hover .track-no { color: var(--platinum); }
-        .track:hover .track-eq { opacity: 1; }
-        .track-no { color: var(--text-3); font-size: 0.85rem; font-variant-numeric: tabular-nums; transition: color 0.25s ease; }
-        .track-name { color: var(--text); font-size: 0.95rem; }
-        .track-name .sub { color: var(--text-3); font-size: 0.77rem; display: block; margin-top: 2px; }
-        .track-level {
-            width: 90px; height: 4px;
-            background: var(--line);
-            border-radius: 2px;
+        .node-fill {
+            display: block;
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #6e6e74, var(--platinum));
+            position: relative;
             overflow: hidden;
         }
-        .track-level .fill {
-            height: 100%;
-            background: linear-gradient(90deg, #38bdf8, #5eead4);
-            border-radius: 2px;
-            box-shadow: 0 0 8px rgba(94,234,212,0.35);
+        .node-fill::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(100deg, transparent 15%, rgba(255,255,255,0.4) 50%, transparent 85%);
+            transform: translateX(-100%);
+            animation: waterFlow 2.4s ease-in-out infinite;
         }
-        .track-eq {
-            display: inline-flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 12px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
+        @keyframes waterFlow {
+            0% { transform: translateX(-100%); }
+            55%, 100% { transform: translateX(100%); }
         }
-        .track-eq .te { width: 2.5px; background: var(--platinum); border-radius: 2px; animation: eqDance 1s ease-in-out infinite; }
-        .track-eq .te:nth-child(2) { animation-delay: 0.25s; }
-        .track-eq .te:nth-child(3) { animation-delay: 0.5s; }
+
+        /* 状态：已学完（高亮）/ 学习中（进度条）/ 未学（暗） */
+        .node-btn.done {
+            border-color: rgba(212,212,216,0.3);
+            box-shadow: 0 0 18px rgba(212,212,216,0.08), 0 10px 28px rgba(0,0,0,0.35);
+        }
+        .node-btn.done .node-name { color: var(--white); }
+        .node-btn.done .node-bar { border-color: rgba(212,212,216,0.3); box-shadow: 0 0 10px rgba(212,212,216,0.08); }
+        .node-btn.done .node-fill { background: linear-gradient(90deg, #cfcfd4, #ffffff); box-shadow: 0 0 8px var(--glow); }
+
+        .node-btn.none { opacity: 0.35; }
+        .node-btn.none .node-name { color: var(--text-3); }
+        .node-btn.none .node-bar { background: transparent; }
+        .node-btn.none .node-fill { width: 0 !important; }
+
+        /* 分裂动画：分支从主体身体内飞出 */
+        .tree-view.open .node-btn { animation: branchIn 0.55s cubic-bezier(0.2,0.8,0.2,1) backwards; }
+        .tree-view.open .node-btn:nth-child(1) { animation-delay: 0.05s; }
+        .tree-view.open .node-btn:nth-child(2) { animation-delay: 0.10s; }
+        .tree-view.open .node-btn:nth-child(3) { animation-delay: 0.15s; }
+        .tree-view.open .node-btn:nth-child(4) { animation-delay: 0.20s; }
+        .tree-view.open .node-btn:nth-child(5) { animation-delay: 0.25s; }
+        .tree-view.open .node-btn:nth-child(6) { animation-delay: 0.30s; }
+        @keyframes branchIn {
+            from { opacity: 0; transform: translate(var(--dx, -24px), var(--dy, 0px)) scale(0.25); }
+            to { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
 
         /* 项目作品 */
         .album-grid {
@@ -1179,8 +1377,21 @@
             .hero-name { font-size: 2rem; }
             .hero-tag { justify-content: center; }
             .hero-meta { justify-content: center; }
-            .track { grid-template-columns: 36px 1fr auto; }
-            .track-eq { display: none; }
+            .tree-switch { top: 0.8rem; left: 1rem; }
+            .switch-btn { padding: 0.45rem 0.9rem; font-size: 0.78rem; }
+            .switch-menu { left: 0; min-width: 180px; }
+            .tree-views { height: 600px; }
+            .tree-view.active {
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 1.1rem;
+                padding-top: 13%;
+            }
+            .root-btn { padding: 0.62rem 1.2rem; font-size: 0.92rem; }
+            .root-btn:hover { transform: translateY(-2px); }
+            .root-btn .root-meta { display: none; }
+            .branch-col { gap: 0.6rem; }
+            .node-btn { min-width: 0; width: 74vw; max-width: 280px; padding: 0.5rem 0.85rem 0.55rem; }
             .progress-wrap { display: none; }
             .bottombar { grid-template-columns: 1fr auto; padding: 0.7rem 1rem; }
             .np-info { max-width: 160px; }
@@ -1325,65 +1536,321 @@
                 <div class="sec-head">
                     <h2>技能清单</h2>
                     <div class="sec-line"></div>
-                    <div class="sec-count">9 TRACKS</div>
+                    <div class="sec-count">09 FIELDS · OUTLINE</div>
                 </div>
                 <div class="tracklist">
-                    <div class="track">
-                        <div class="track-no">01</div>
-                        <div class="track-name">HTML5<span class="sub">语义结构 · 响应式 · 表单</span></div>
-                        <div class="track-level"><div class="fill" style="width:70%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:40%"></span><span class="te" style="height:80%"></span><span class="te" style="height:55%"></span></div>
+                    <div class="tree-switch" id="treeSwitch">
+                        <button class="switch-btn" id="switchBtn" type="button">
+                            <span class="switch-lab">技能树</span>
+                            <span class="switch-name" id="switchName">Python</span>
+                            <span class="switch-caret">▾</span>
+                        </button>
+                        <ul class="switch-menu">
+                            <li class="switch-item active" data-skill="0"><span class="si-no">01</span><span class="si-name">Python</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="1"><span class="si-no">02</span><span class="si-name">HTML · CSS</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="2"><span class="si-no">03</span><span class="si-name">JavaScript</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="3"><span class="si-no">04</span><span class="si-name">C 语言</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="4"><span class="si-no">05</span><span class="si-name">MySQL</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="5"><span class="si-no">06</span><span class="si-name">Linux</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="6"><span class="si-no">07</span><span class="si-name">Git</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="7"><span class="si-no">08</span><span class="si-name">Kali · 网络安全</span><span class="si-dot"></span></li>
+                            <li class="switch-item" data-skill="8"><span class="si-no">09</span><span class="si-name">计算机网络</span><span class="si-dot"></span></li>
+                        </ul>
                     </div>
-                    <div class="track">
-                        <div class="track-no">02</div>
-                        <div class="track-name">Python<span class="sub">脚本 · 工具 · 自动化</span></div>
-                        <div class="track-level"><div class="fill" style="width:65%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:50%"></span><span class="te" style="height:70%"></span><span class="te" style="height:45%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">03</div>
-                        <div class="track-name">C<span class="sub">基础语法 · 指针 · 数据结构</span></div>
-                        <div class="track-level"><div class="fill" style="width:62%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:40%"></span><span class="te" style="height:90%"></span><span class="te" style="height:50%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">04</div>
-                        <div class="track-name">MySQL<span class="sub">查询 · 建表 · 基础优化</span></div>
-                        <div class="track-level"><div class="fill" style="width:58%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:55%"></span><span class="te" style="height:65%"></span><span class="te" style="height:80%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">05</div>
-                        <div class="track-name">JavaScript<span class="sub">ES6 · DOM · 交互</span></div>
-                        <div class="track-level"><div class="fill" style="width:66%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:40%"></span><span class="te" style="height:75%"></span><span class="te" style="height:45%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">06</div>
-                        <div class="track-name">Linux<span class="sub">命令行 · 部署 · 服务器</span></div>
-                        <div class="track-level"><div class="fill" style="width:75%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:50%"></span><span class="te" style="height:85%"></span><span class="te" style="height:55%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">07</div>
-                        <div class="track-name">Git<span class="sub">版本控制 · 分支协作</span></div>
-                        <div class="track-level"><div class="fill" style="width:70%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:40%"></span><span class="te" style="height:70%"></span><span class="te" style="height:50%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">08</div>
-                        <div class="track-name">Kali<span class="sub">安全工具 · 渗透练习</span></div>
-                        <div class="track-level"><div class="fill" style="width:68%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:55%"></span><span class="te" style="height:80%"></span><span class="te" style="height:45%"></span></div>
-                    </div>
-                    <div class="track">
-                        <div class="track-no">09</div>
-                        <div class="track-name">计算机网络<span class="sub">TCP/IP · 协议栈</span></div>
-                        <div class="track-level"><div class="fill" style="width:72%"></div></div>
-                        <div class="track-eq"><span class="te" style="height:45%"></span><span class="te" style="height:75%"></span><span class="te" style="height:55%"></span></div>
+                    <div class="tree-views">
+
+                        <!-- 01 · Python -->
+                        <div class="tree-view active" data-skill="0">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">Python</span>
+                                    <span class="root-meta">5 分支 · 2 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">基础语法</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:65%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">脚本与自动化</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:25%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">爬虫</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:20%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">数据分析</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">Web 框架</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 02 · HTML · CSS -->
+                        <div class="tree-view" data-skill="1">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">HTML · CSS</span>
+                                    <span class="root-meta">5 分支 · 1 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">语义结构</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:70%"></span></span>
+                                </button>
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">响应式布局</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:70%"></span></span>
+                                </button>
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">表单</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:70%"></span></span>
+                                </button>
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">CSS 动画</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:70%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">前端框架</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 03 · JavaScript -->
+                        <div class="tree-view" data-skill="2">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">JavaScript</span>
+                                    <span class="root-meta">5 分支 · 2 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">ES6 语法</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:70%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">DOM 操作</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:45%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">事件交互</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:45%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">异步编程</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">前端框架</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 04 · C 语言 -->
+                        <div class="tree-view" data-skill="3">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">C 语言</span>
+                                    <span class="root-meta">4 分支 · 0 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">基础语法</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:80%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">指针</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:65%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">数据结构</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:20%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">内存管理</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:35%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 05 · MySQL -->
+                        <div class="tree-view" data-skill="4">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">MySQL</span>
+                                    <span class="root-meta">5 分支 · 2 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn done" type="button">
+                                    <span class="node-name">基础查询</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:70%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">建表与约束</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:55%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">索引优化</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">事务</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">存储过程</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:45%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 06 · Linux -->
+                        <div class="tree-view" data-skill="5">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">Linux</span>
+                                    <span class="root-meta">5 分支 · 2 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">命令行操作</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:35%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">文件与权限</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:30%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">网络配置</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:45%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">Shell 脚本</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">服务部署</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 07 · Git -->
+                        <div class="tree-view" data-skill="6">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">Git</span>
+                                    <span class="root-meta">4 分支 · 1 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">基础操作</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:25%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">分支协作</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:20%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">远程仓库</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:30%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">协作工作流</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 08 · Kali / 网络安全 -->
+                        <div class="tree-view" data-skill="7">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">Kali · 网络安全</span>
+                                    <span class="root-meta">6 分支 · 3 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">渗透工具使用</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:5%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">Wi-Fi 安全</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:35%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">ARP 攻击实践</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:25%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">信息收集</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">Web 安全</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">漏洞挖掘</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 09 · 计算机网络 -->
+                        <div class="tree-view" data-skill="8">
+                            <div class="root-wrap">
+                                <button class="root-btn" type="button">
+                                    <span class="root-caret">▸</span>
+                                    <span class="root-name">计算机网络</span>
+                                    <span class="root-meta">4 分支 · 1 未学</span>
+                                </button>
+                            </div>
+                            <div class="branch-col">
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">TCP/IP 协议</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:35%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">协议栈</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:25%"></span></span>
+                                </button>
+                                <button class="node-btn" type="button">
+                                    <span class="node-name">HTTP / HTTPS</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:15%"></span></span>
+                                </button>
+                                <button class="node-btn none" type="button">
+                                    <span class="node-name">路由与交换</span>
+                                    <span class="node-bar"><span class="node-fill" style="width:0%"></span></span>
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-                <p style="margin-top:1.1rem;color:var(--text-3);font-size:0.84rem;text-align:center;letter-spacing:1px;">进度条仅为视觉示意 · 一门语言的边界远比已学的更广，仍在持续探索中。</p>
+                <p style="margin-top:1.1rem;color:var(--text-3);font-size:0.84rem;text-align:center;letter-spacing:1px;">本模块用于大致展示当前实力与已学知识进度 · 仅供自我参考，仍在持续探索中。</p>
             </section>
 
             <!-- 项目作品 -->
@@ -1673,6 +2140,136 @@
                 });
             }, { root: main, threshold: 0.12 });
             sections.forEach(s => revealIo.observe(s));
+
+            /* ---------- 5.5 技能清单 · 知识树展开与切换 ---------- */
+            const treeSwitch = document.getElementById('treeSwitch');
+            const switchBtn = document.getElementById('switchBtn');
+            const switchName = document.getElementById('switchName');
+            const switchItems = document.querySelectorAll('.switch-item');
+            const treeViews = document.querySelectorAll('.tree-view');
+
+            /* 绘制根节点到各分支的连接线条（SVG） */
+            function drawLines(tv) {
+                const root = tv.querySelector('.root-btn');
+                const nodes = tv.querySelectorAll('.node-btn');
+                if (!root || !nodes.length) return;
+                let svg = tv.querySelector('.tree-lines');
+                if (!svg) {
+                    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('class', 'tree-lines');
+                    tv.insertBefore(svg, tv.firstChild);
+                }
+                const rect = tv.getBoundingClientRect();
+                if (!rect.width) return;
+                const r = root.getBoundingClientRect();
+                const y1 = r.top + r.height / 2 - rect.top;
+                svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
+                svg.innerHTML = '';
+                const firstTop = nodes[0].getBoundingClientRect().top - rect.top;
+                const vertical = firstTop > y1 + rect.height * 0.06;
+                const cx = r.left + r.width / 2 - rect.left;
+                const x1 = r.right - rect.left;
+                const y1b = r.bottom - rect.top;
+                nodes.forEach((n, i) => {
+                    const nr = n.getBoundingClientRect();
+                    let d;
+                    if (vertical) {
+                        const x2c = nr.left + nr.width / 2 - rect.left;
+                        const y2t = nr.top - rect.top;
+                        const midY = (y1b + y2t) / 2;
+                        d = 'M ' + cx + ' ' + y1b + ' C ' + cx + ' ' + midY + ', ' + x2c + ' ' + midY + ', ' + x2c + ' ' + y2t;
+                    } else {
+                        const x2 = nr.left - rect.left;
+                        const y2 = nr.top + nr.height / 2 - rect.top;
+                        const mx = (x1 + x2) / 2;
+                        d = 'M ' + x1 + ' ' + y1 + ' C ' + mx + ' ' + y1 + ', ' + mx + ' ' + y2 + ', ' + x2 + ' ' + y2;
+                    }
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', d);
+                    svg.appendChild(path);
+                    const len = path.getTotalLength();
+                    path.style.strokeDasharray = len;
+                    path.style.strokeDashoffset = len;
+                    path.style.transitionDelay = (0.07 * (i + 1)) + 's';
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        path.style.strokeDashoffset = '0';
+                    }));
+                });
+            }
+
+            function refreshActiveTree() {
+                const tv = document.querySelector('.tree-view.active');
+                if (!tv) return;
+                if (tv.classList.contains('open')) {
+                    /* 等分支动画落定后再画线，保证端点对齐 */
+                    clearTimeout(tv._lineTimer);
+                    tv._lineTimer = setTimeout(function () {
+                        if (tv.classList.contains('open')) drawLines(tv);
+                    }, 900);
+                } else {
+                    const svg = tv.querySelector('.tree-lines');
+                    if (svg) svg.innerHTML = '';
+                }
+            }
+
+            /* 计算每个分支相对主体中心的偏移，让分支从主体身体内分裂飞出 */
+            function prepareBranchOrigin(tv) {
+                const root = tv.querySelector('.root-btn');
+                const nodes = tv.querySelectorAll('.node-btn');
+                if (!root || !nodes.length) return;
+                const rr = root.getBoundingClientRect();
+                const rcx = rr.left + rr.width / 2;
+                const rcy = rr.top + rr.height / 2;
+                nodes.forEach(n => {
+                    const nr = n.getBoundingClientRect();
+                    n.style.setProperty('--dx', (rcx - (nr.left + nr.width / 2)) + 'px');
+                    n.style.setProperty('--dy', (rcy - (nr.top + nr.height / 2)) + 'px');
+                });
+            }
+
+            switchBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                treeSwitch.classList.toggle('open');
+            });
+            document.addEventListener('click', function (e) {
+                if (!treeSwitch.contains(e.target)) treeSwitch.classList.remove('open');
+            });
+            switchItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const skill = item.dataset.skill;
+                    switchItems.forEach(i => i.classList.toggle('active', i === item));
+                    switchName.textContent = item.querySelector('.si-name').textContent;
+                    treeViews.forEach(tv => tv.classList.toggle('active', tv.dataset.skill === skill));
+                    treeSwitch.classList.remove('open');
+                    requestAnimationFrame(refreshActiveTree);
+                });
+            });
+            treeViews.forEach(tv => {
+                const root = tv.querySelector('.root-btn');
+                if (root) {
+                    root.addEventListener('click', function () {
+                        if (!tv.classList.contains('open')) prepareBranchOrigin(tv);
+                        tv.classList.toggle('open');
+                        requestAnimationFrame(refreshActiveTree);
+                    });
+                }
+            });
+            window.addEventListener('resize', function () {
+                treeViews.forEach(tv => {
+                    if (tv.classList.contains('active') && tv.classList.contains('open')) drawLines(tv);
+                });
+            });
+
+            /* ---------- 5.6 分支按钮右上角百分比 ---------- */
+            document.querySelectorAll('.node-btn').forEach(function (btn) {
+                const fill = btn.querySelector('.node-fill');
+                if (!fill) return;
+                const pct = document.createElement('span');
+                pct.className = 'node-pct';
+                const w = parseInt(fill.style.width, 10) || 0;
+                pct.textContent = (btn.classList.contains('none') && w === 0) ? '未学' : w + '%';
+                btn.appendChild(pct);
+            });
 
             /* ---------- 6. 播放/暂停 ---------- */
             const playBtn = document.getElementById('playBtn');
