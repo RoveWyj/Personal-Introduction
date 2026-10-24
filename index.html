@@ -880,6 +880,8 @@
             border-radius: 12px;
             padding: 0.95rem 1.2rem;
             transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
         }
         .cert-item:hover {
             background: var(--bg-elev);
@@ -897,6 +899,18 @@
         .cert-ico svg { width: 17px; height: 17px; }
         .cert-name { color: var(--text); font-size: 0.9rem; }
         .cert-sub { color: var(--text-3); font-size: 0.76rem; }
+        a.cert-item { text-decoration: none; color: inherit; }
+        .cert-go {
+            position: absolute;
+            right: 1.1rem; top: 50%;
+            display: flex;
+            color: var(--text-3);
+            opacity: 0;
+            transform: translateY(-50%) translateX(-4px);
+            transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
+        }
+        .cert-go svg { width: 13px; height: 13px; }
+        .cert-item:hover .cert-go { opacity: 1; transform: translateY(-50%) translateX(0); color: var(--platinum); }
 
         /* 联系方式 */
         .contact-grid {
@@ -1923,12 +1937,45 @@
                     <div class="sec-count">CERTIFICATES</div>
                 </div>
                 <ul class="cert-list">
-                    <li class="cert-item">
-                        <div class="cert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 14.5L7.5 22l4.5-2.5L16.5 22 15 14.5"/></svg></div>
-                        <div>
-                            <div class="cert-name">全国计算机等级考试一级证书</div>
-                            <div class="cert-sub">教育部考试中心</div>
-                        </div>
+                    <li>
+                        <a class="cert-item" href="Harmonyrz.jpg" target="_blank" rel="noopener">
+                            <div class="cert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 14.5L7.5 22l4.5-2.5L16.5 22 15 14.5"/></svg></div>
+                            <div>
+                                <div class="cert-name">HarmonyOS 应用开发者基础认证</div>
+                                <div class="cert-sub">华为开发者学堂 · 2026</div>
+                            </div>
+                            <span class="cert-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="cert-item" href="Model%20development_g.png" target="_blank" rel="noopener">
+                            <div class="cert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 14.5L7.5 22l4.5-2.5L16.5 22 15 14.5"/></svg></div>
+                            <div>
+                                <div class="cert-name">大模型开发工程师</div>
+                                <div class="cert-sub">浪潮信息 × Datawhale · 2026</div>
+                            </div>
+                            <span class="cert-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="cert-item" href="AI%20Capability%20Certification.png" target="_blank" rel="noopener">
+                            <div class="cert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 14.5L7.5 22l4.5-2.5L16.5 22 15 14.5"/></svg></div>
+                            <div>
+                                <div class="cert-name">Agent Engineer</div>
+                                <div class="cert-sub">蚂蚁集团 × 百宝箱 × Datawhale · 2026</div>
+                            </div>
+                            <span class="cert-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="cert-item" href="Computer%20Level%201.jpg" target="_blank" rel="noopener">
+                            <div class="cert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 14.5L7.5 22l4.5-2.5L16.5 22 15 14.5"/></svg></div>
+                            <div>
+                                <div class="cert-name">全国计算机等级考试一级证书</div>
+                                <div class="cert-sub">教育部教育考试院 · 2025</div>
+                            </div>
+                            <span class="cert-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg></span>
+                        </a>
                     </li>
                 </ul>
                 <p style="margin-top:1rem;color:var(--text-3);font-size:0.84rem;letter-spacing:1px;">其他认证备考中，持续更新。</p>
